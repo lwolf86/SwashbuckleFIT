@@ -6,6 +6,7 @@ namespace Swashbuckle.Application
     public class InfoBuilder
     {
         private string _version;
+        private string _specialVersion;
         private string _title;
         private string _description;
         private string _termsOfService;
@@ -42,11 +43,23 @@ namespace Swashbuckle.Application
             return this;
         }
 
+        /// <summary>
+        /// 用于显示的特殊版本号格式
+        /// 如：Release.2015-10-12 15:33:20
+        /// </summary>
+        /// <param name="specialVersion"></param>
+        /// <returns></returns>
+        public InfoBuilder SpecialVersionNo(string specialVersion)
+        {
+            _specialVersion = specialVersion;
+            return this;
+        }
+
         internal Info Build()
         {
             return new Info
             {
-                version = _version,
+                version = string.IsNullOrEmpty(_specialVersion) ? _version : _specialVersion,
                 title = _title,
                 description = _description,
                 termsOfService = _termsOfService,

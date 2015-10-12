@@ -18,29 +18,30 @@ namespace Swashbuckle.Application
             this HttpConfiguration httpConfig,
             Action<SwaggerDocsConfig> configure = null)
         {
-            return EnableSwagger(httpConfig, DefaultRouteTemplate, configure);
+            return EnableSwagger(httpConfig, DefaultRouteTemplate, false, configure);
         }
 
         public static SwaggerEnabledConfiguration EnableSwagger(
             this HttpConfiguration httpConfig,
             string routeTemplate,
+            bool isSpecial = false,
             Action<SwaggerDocsConfig> configure = null)
         {
             var config = new SwaggerDocsConfig();
             if (configure != null) configure(config);
 
             httpConfig.Routes.MapHttpRoute(
-                name: "swagger_docs",
-                routeTemplate: routeTemplate,
-                defaults: null,
-                constraints: new { apiVersion = @".+" },
-                handler: new SwaggerDocsHandler(config)
-            );
+                    name: "swagger_docs",
+                    routeTemplate: routeTemplate,
+                    defaults: null,
+                    constraints: new { apiVersion = @".+" },
+                    handler: new SwaggerDocsHandler(config)
+                );
 
-            return new SwaggerEnabledConfiguration(
-                httpConfig,
-                config.GetRootUrl,
-                config.GetApiVersions().Select(version => routeTemplate.Replace("{apiVersion}", version)));
+            IEnumerable<string> discoveryPaths = config.GetApiVersions()
+                .Select(version => isSpecial ? routeTemplate.Replace("{apiVersion}", "v1") : routeTemplate.Replace("{apiVersion}", version));
+
+            return new SwaggerEnabledConfiguration(httpConfig, config.GetRootUrl, discoveryPaths);
         }
 
         internal static JsonSerializerSettings SerializerSettingsOrDefault(this HttpConfiguration httpConfig)
